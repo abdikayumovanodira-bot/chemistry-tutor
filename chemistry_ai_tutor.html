@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Химия ЖИ-тьюторы</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #10161d;
+    --panel: #1a222c;
+    --panel-2: #212b37;
+    --line: #2b3641;
+    --text: #e7edf3;
+    --muted: #8a97a5;
+    --student: #ff8a4c;
+    --student-dim: #4a3626;
+    --tutor: #5fd0a8;
+    --tutor-dim: #1f3a32;
+    --danger: #ff6b6b;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--bg), var(--bg)),
+      repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(255,255,255,0.025) 28px),
+      repeating-linear-gradient(90deg, transparent, transparent 27px, rgba(255,255,255,0.025) 28px);
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    display:flex;
+    justify-content:center;
+    padding:24px 12px;
+  }
+  .app{
+    width:100%;
+    max-width:720px;
+    display:flex;
+    flex-direction:column;
+    height:min(860px, 92vh);
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:16px;
+    overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,0.45);
+  }
+  header{
+    padding:20px 24px 16px;
+    border-bottom:1px solid var(--line);
+    background:var(--panel-2);
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--tutor);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:7px;height:7px;border-radius:50%;
+    background:var(--tutor);
+    box-shadow:0 0 0 3px var(--tutor-dim);
+  }
+  h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:22px;
+    font-weight:700;
+    margin:6px 0 2px;
+    letter-spacing:-0.01em;
+  }
+  .subtitle{
+    font-size:13px;
+    color:var(--muted);
+    margin:0;
+  }
+  .scope-tag{
+    display:inline-flex;
+    margin-top:10px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--muted);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:4px 10px;
+  }
+
+  #messages{
+    flex:1;
+    overflow-y:auto;
+    padding:20px 24px;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .msg-row{
+    display:flex;
+    flex-direction:column;
+    max-width:88%;
+    animation:rise 0.25s ease-out;
+  }
+  @keyframes rise{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+  .msg-row.student{ align-self:flex-end; align-items:flex-end; }
+  .msg-row.tutor{ align-self:flex-start; align-items:flex-start; }
+
+  .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    margin-bottom:4px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .msg-row.student .tag{ color:var(--student); }
+  .msg-row.tutor .tag{ color:var(--tutor); }
+  .flask{ font-size:12px; }
+
+  .bubble{
+    padding:11px 15px;
+    border-radius:14px;
+    font-size:14.5px;
+    line-height:1.55;
+    white-space:pre-wrap;
+  }
+  .msg-row.student .bubble{
+    background:var(--student-dim);
+    border:1px solid rgba(255,138,76,0.35);
+    border-top-right-radius:4px;
+  }
+  .msg-row.tutor .bubble{
+    background:var(--tutor-dim);
+    border:1px solid rgba(95,208,168,0.3);
+    border-top-left-radius:4px;
+  }
+
+  .reaction-divider{
+    align-self:center;
+    color:var(--line);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    margin:2px 0;
+  }
+
+  .composer{
+    border-top:1px solid var(--line);
+    background:var(--panel-2);
+    padding:14px 16px;
+    display:flex;
+    gap:10px;
+    align-items:flex-end;
+  }
+  textarea{
+    flex:1;
+    resize:none;
+    background:var(--bg);
+    border:1px solid var(--line);
+    border-radius:10px;
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:14px;
+    padding:10px 12px;
+    min-height:44px;
+    max-height:140px;
+    outline:none;
+  }
+  textarea:focus{ border-color:var(--tutor); }
+  textarea::placeholder{ color:var(--muted); }
+
+  button#send{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.05em;
+    background:var(--tutor);
+    color:#0b1a15;
+    border:none;
+    border-radius:10px;
+    padding:12px 16px;
+    cursor:pointer;
+    font-weight:600;
+    white-space:nowrap;
+    transition:filter 0.15s;
+  }
+  button#send:hover{ filter:brightness(1.08); }
+  button#send:disabled{ opacity:0.5; cursor:not-allowed; }
+  button#send:focus-visible, textarea:focus-visible{ outline:2px solid var(--tutor); outline-offset:2px; }
+
+  .typing{
+    display:flex;
+    gap:4px;
+    padding:4px 0;
+  }
+  .typing span{
+    width:6px;height:6px;border-radius:50%;
+    background:var(--tutor);
+    animation:blink 1.2s infinite ease-in-out;
+  }
+  .typing span:nth-child(2){ animation-delay:0.15s; }
+  .typing span:nth-child(3){ animation-delay:0.3s; }
+  @keyframes blink{ 0%,80%,100%{opacity:0.25;} 40%{opacity:1;} }
+
+  .setup-banner{
+    margin:14px 24px 0;
+    padding:10px 12px;
+    border:1px solid rgba(255,107,107,0.35);
+    background:rgba(255,107,107,0.08);
+    border-radius:10px;
+    font-size:12.5px;
+    color:#ffb3b3;
+    display:none;
+  }
+  .setup-banner.show{ display:block; }
+
+  @media (prefers-reduced-motion: reduce){
+    .msg-row{ animation:none; }
+    .typing span{ animation:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <div class="eyebrow">Онлайн · 9–10 сынып бағдарламасы</div>
+    <h1>Химия ЖИ-тьюторы</h1>
+    <p class="subtitle">Сұрағыңды қаз тілінде жаз — жауапты бірден айтпай, өзің тауып алуыңа көмектесемін.</p>
+    <span class="scope-tag">Тек химия пәні · 9–10 сынып тақырыптары</span>
+  </header>
+
+  <div id="setupBanner" class="setup-banner">
+    ЖИ-тьютор әлі қосылмаған: script.js ішіндегі <code>API_KEY</code> өрісіне өз Gemini кілтіңізді қойыңыз.
+  </div>
+
+  <div id="messages"></div>
+
+  <div class="composer">
+    <textarea id="input" rows="1" placeholder="Мысалы: неге сірке қышқылы әлсіз электролит?"></textarea>
+    <button id="send">ЖІБЕРУ →</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   БАПТАУ — тек осы блокты өзгертіңіз
+   ============================================================ */
+const CONFIG = {
+  // Google AI Studio-дан (aistudio.google.com) алынған тегін API кілт.
+  // ЕСКЕРТУ: бұл кілт беттің бастапқы кодында көрінеді (client-side).
+  // Өндірістік қолданыста HTTP-referrer шектеуін API кілтіне міндетті түрде қойыңыз
+  // (Google Cloud Console → Credentials → API key → Application restrictions).
+  API_KEY: "СІЗДІҢ_GEMINI_API_КІЛТІҢІЗ",
+
+  MODEL: "gemini-2.0-flash",
+
+  // Осы жүйелік нұсқау моделдің «тұлғасын» анықтайды — тақырыптан
+  // тыс сұрақтарға жауап бермеуін, тікелей жауап айтпай, оқушыны
+  // өзі ойлануға бағыттауын осы жерден бекітесіз.
+  SYSTEM_PROMPT: `Сен — қазақстандық 9-10 сынып оқушыларына арналған химия пәнінің
+ЖИ-тьюторысың. Тек мына тақырыптар аясында көмектесесің: электролиттік
+диссоциация, қышқыл-негіз-тұз қасиеттері, реакция жылдамдығы, химиялық
+тепе-теңдік, тотығу-тотықсыздану, электрохимия, металдар мен бейметалдар,
+органикалық химия негіздері, стехиометриялық есептер.
+
+ЕРЕЖЕЛЕР:
+1. ӘРҚАШАН тек қазақ тілінде жауап бер.
+2. Дайын жауапты бірден айтпа. Алдымен оқушыға бағыттаушы сұрақ қой,
+   оны өзі ойлануға түрткі жаса (сократтық әдіс).
+3. Оқушы 2-3 рет қателессе немесе тікелей сұраса ғана, қысқа әрі
+   түсінікті түсіндірме бер.
+4. Егер сұрақ химиядан тыс болса (басқа пән, жеке өмір, т.б.),
+   сыпайы түрде «Мен тек химия пәні бойынша көмектесе аламын» деп,
+   қайта химияға бағытта.
+5. Жауаптарың 9-10 сынып деңгейіне сай, қарапайым тілде, қажет болса
+   реакция теңдеуімен немесе қысқа мысалмен түсіндір.
+6. Оқушыны құрметпен, қолдаушы тонмен сөйле, қатесін айыптама.`,
+};
+/* ============================================================ */
+
+const messagesEl = document.getElementById('messages');
+const inputEl = document.getElementById('input');
+const sendBtn = document.getElementById('send');
+const setupBanner = document.getElementById('setupBanner');
+
+let history = []; // {role: 'user'|'model', text: string}
+
+function keyLooksUnset(){
+  return !CONFIG.API_KEY || CONFIG.API_KEY.indexOf("СІЗДІҢ_") === 0;
+}
+
+if (keyLooksUnset()){
+  setupBanner.classList.add('show');
+}
+
+function addMessage(role, text){
+  const row = document.createElement('div');
+  row.className = 'msg-row ' + (role === 'user' ? 'student' : 'tutor');
+
+  const tag = document.createElement('div');
+  tag.className = 'tag';
+  tag.innerHTML = role === 'user'
+    ? '<span class="flask">🧑‍🎓</span> ОҚУШЫ'
+    : '<span class="flask">⚗️</span> ЖИ-ТЬЮТОР';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.textContent = text;
+
+  row.appendChild(tag);
+  row.appendChild(bubble);
+  messagesEl.appendChild(row);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  return bubble;
+}
+
+function addTyping(){
+  const row = document.createElement('div');
+  row.className = 'msg-row tutor';
+  row.id = 'typingRow';
+  const tag = document.createElement('div');
+  tag.className = 'tag';
+  tag.innerHTML = '<span class="flask">⚗️</span> ЖИ-ТЬЮТОР';
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble typing';
+  bubble.innerHTML = '<span></span><span></span><span></span>';
+  row.appendChild(tag);
+  row.appendChild(bubble);
+  messagesEl.appendChild(row);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function removeTyping(){
+  const row = document.getElementById('typingRow');
+  if (row) row.remove();
+}
+
+async function askGemini(userText){
+  if (keyLooksUnset()){
+    return "Кешіріңіз, ЖИ-тьютор әлі бапталмаған. Мұғалім API кілтті қосуы керек.";
+  }
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${CONFIG.MODEL}:generateContent?key=${CONFIG.API_KEY}`;
+
+  const contents = history.map(m => ({
+    role: m.role,
+    parts: [{ text: m.text }]
+  }));
+  contents.push({ role: 'user', parts: [{ text: userText }] });
+
+  const body = {
+    system_instruction: { parts: [{ text: CONFIG.SYSTEM_PROMPT }] },
+    contents: contents,
+    generationConfig: { temperature: 0.6, maxOutputTokens: 500 }
+  };
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error(errText);
+      return "Қате шықты: сұранысты өңдеу мүмкін болмады. Кейінірек қайталап көріңіз.";
+    }
+    const data = await res.json();
+    const text = data.candidates &&
+                 data.candidates[0] &&
+                 data.candidates[0].content &&
+                 data.candidates[0].content.parts &&
+                 data.candidates[0].content.parts[0].text;
+    return text || "Кешіріңіз, жауап алынбады. Сұрағыңызды өзгертіп қайталап көріңіз.";
+  } catch (err) {
+    console.error(err);
+    return "Желі қатесі болды. Интернет байланысын тексеріп, қайталап көріңіз.";
+  }
+}
+
+async function handleSend(){
+  const text = inputEl.value.trim();
+  if (!text) return;
+
+  addMessage('user', text);
+  history.push({ role: 'user', text: text });
+  inputEl.value = '';
+  inputEl.style.height = 'auto';
+  sendBtn.disabled = true;
+
+  addTyping();
+  const reply = await askGemini(text);
+  removeTyping();
+
+  addMessage('model', reply);
+  history.push({ role: 'model', text: reply });
+
+  // Тым ұзақ тарихты шектеу (соңғы 12 хабарлама)
+  if (history.length > 12) history = history.slice(-12);
+
+  sendBtn.disabled = false;
+  inputEl.focus();
+}
+
+sendBtn.addEventListener('click', handleSend);
+inputEl.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey){
+    e.preventDefault();
+    handleSend();
+  }
+});
+inputEl.addEventListener('input', () => {
+  inputEl.style.height = 'auto';
+  inputEl.style.height = Math.min(inputEl.scrollHeight, 140) + 'px';
+});
+
+// Алғашқы сәлемдесу хабары
+addMessage('model', 'Сәлем! Мен — сенің химия ЖИ-тьюторыңмын. Электролиттерден бастап органикалық химияға дейін, 9-10 сынып тақырыптары бойынша сұрағыңды қой. Дайын жауапты бірден бермеймін — бірге ойланайық 🙂');
+</script>
+
+</body>
+</html>
